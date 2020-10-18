@@ -16,6 +16,7 @@ using Resthopper.IO;
 using Newtonsoft.Json;
 using System.Linq;
 using Serilog;
+using System.Text.RegularExpressions;
 
 namespace compute.geometry
 {
@@ -68,7 +69,7 @@ namespace compute.geometry
 
                 string nickname = group.NickName;
                 var groupObjects = group.Objects();
-                if ( nickname.Contains("RH_IN") && groupObjects.Count>0)
+                if ( nickname.StartsWith("RH_IN") && groupObjects.Count>0)
                 {
                     var param = groupObjects[0] as IGH_Param;
                     if (param != null)
@@ -77,7 +78,7 @@ namespace compute.geometry
                     }
                 }
 
-                if (nickname.Contains("RH_OUT") && groupObjects.Count > 0)
+                if (nickname.StartsWith("RH_OUT") && groupObjects.Count > 0)
                 {
                     var param = groupObjects[0] as IGH_Param;
                     if (param != null)
@@ -560,11 +561,13 @@ namespace compute.geometry
             {
                 InputNames.Add(i.Key);
 
-                Inputs.Add(new IoParamSchema
+                var param = new IoParamSchema
                 {
-                    Name = i.Key,
-                    ParamType = i.Value.Param.TypeName
-                });
+                    Name = Regex.Replace(i.Key, "^RH_IN:?", ""),
+                    ParamType = i.Value.Param.TypeName,
+                };
+
+                Inputs.Add(param);
             }
 
             foreach (var o in _output)
@@ -572,7 +575,7 @@ namespace compute.geometry
                 OutputNames.Add(o.Key);
                 Outputs.Add(new IoParamSchema
                 {
-                    Name = o.Key,
+                    Name = Regex.Replace(o.Key, "^RH_OUT:?", ""),
                     ParamType = o.Value.TypeName
                 });
             }
