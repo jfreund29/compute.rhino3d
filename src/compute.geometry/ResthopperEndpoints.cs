@@ -13,6 +13,7 @@ using Grasshopper.Kernel.Special;
 using Rhino.Geometry;
 using System.Net;
 using Nancy.Extensions;
+using Newtonsoft.Json.Serialization;
 
 namespace compute.geometry
 {
@@ -100,7 +101,13 @@ namespace compute.geometry
             if (definition == null)
                 throw new Exception("Unable to load grasshopper definition");
 
-            string jsonResponse = JsonConvert.SerializeObject(definition.GetInputsAndOutputs());
+            var settings = new JsonSerializerSettings
+            {
+                ContractResolver = new Newtonsoft.Json.Serialization.CamelCasePropertyNamesContractResolver(),
+                //ContractResolver = new DefaultContractResolver { NamingStrategy = new SnakeCaseNamingStrategy() },
+                NullValueHandling = NullValueHandling.Ignore
+            };
+            string jsonResponse = JsonConvert.SerializeObject(definition.GetInputsAndOutputs(), settings);
 
             Response res = jsonResponse;
             res.ContentType = "application/json";
